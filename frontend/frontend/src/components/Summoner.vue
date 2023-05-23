@@ -1,11 +1,11 @@
 <template>
     <div>
-        {{ this.$route.params.id }}
+        {{ this.test }}
     </div>
 </template>
 
 <script>
-// import axios from 'axios';
+import axios from 'axios';
 
 export default {
     data(){
@@ -14,18 +14,19 @@ export default {
         }
     },
     created(){
-        // axios('http://127.0.0.1:5000/search', {
-        //     method: "get",
-        //     params: {
-        //         name: this.$route.params.id,
-        //     },
-        // })
-        // .then(function(response){
-        //     this.test = response;
-        // })
-        // .catch(function(error){
-        //     console.log(error);
-        // });        
+        axios('http://127.0.0.1:5000/search', {
+            method: "get",
+            params: {
+                name: this.$route.params.id,
+            },
+        })
+        .then(function(response){
+            console.log(response.data.puuid);
+            this.test = response.data['puuid'];
+        })
+        .catch(function(error){
+            console.log(error);
+        });        
     }
 }
 </script>
