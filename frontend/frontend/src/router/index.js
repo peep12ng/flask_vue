@@ -1,13 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Test from '../components/Test.vue'
+import home from '../components/Home.vue'
+import summoner from '../components/Summoner.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/test',
-      name: 'test',
-      component: Test
+      path: '/',
+      component: home,
+    },
+    {
+      path: '/summoner/:id',
+      component: summoner,
     }
   ]
 })
