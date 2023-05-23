@@ -13,10 +13,11 @@ def search():
         name = request.args.get('name')
         if riotapi.isinAPI_user(name)==True:
             puuid = collecter.get_playerDto('name', name)['puuid']
+            matches = collecter.get_matchHistory(puuid, 0, 20)
     
-    data = {"name" : name, "puuid" : puuid}
+    data = {"name" : name, "puuid" : puuid, "matches" : matches}
 
-    return jsonify(data)
+    return make_response(jsonify(data), 200)
 
     # name = '여자맨'
     # if riotapi.isinAPI_user(name)==True:

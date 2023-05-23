@@ -1,6 +1,6 @@
 <template>
     <div>
-        {{ this.test }}
+        {{ test }}
     </div>
 </template>
 
@@ -10,7 +10,7 @@ import axios from 'axios';
 export default {
     data(){
         return{
-            test: '',
+            test: 'aa',
         }
     },
     created(){
@@ -20,11 +20,11 @@ export default {
                 name: this.$route.params.id,
             },
         })
-        .then(function(response){
-            console.log(response.data.puuid);
+        .then(response => {
+            console.log(response);
             this.test = response.data['puuid'];
         })
-        .catch(function(error){
+        .catch(error => {
             console.log(error);
         });        
     }
