@@ -12,12 +12,14 @@ bp = Blueprint('main', __name__, url_prefix='/')
 def search():
     if request.method == 'GET':
         name = request.args.get('name')
-        if riotapi.isinAPI_user(name)==True:
-            puuid = collecter.get_playerDto('name', name)['puuid']
-            if riotapi.isinDB_user(puuid)==True:
-                riotapi.update_user_info(puuid)
+        print(name)
+        puuid = ''
+        if riotapi.isinAPI_summoner(name)==True:
+            puuid = collecter.get_summonerDto('name', name)['puuid']
+            if riotapi.isinDB_summoner(puuid)==True:
+                riotapi.update_summoner_info(puuid)
             else:
-                riotapi.add_user(puuid)
+                riotapi.add_summoner(puuid)
 
         riotapi.test_update(puuid)
         mds = MatchDetail.query.filter(MatchDetail.puuid==puuid).all()

@@ -5,11 +5,15 @@ class Collecter:
     def __init__(self):
         self.requester = Requester()
     
-    def get_playerDto(self, by, target):
+    def get_summonerDto(self, by, target):
         if by=='name':
             return self.requester.get('json', URL_PLAYER_DATA_BY_NAME + target)
         elif by=='puuid':
             return self.requester.get('json', URL_PLAYER_DATA_BY_PUUID + target)
+        
+    def get_summonerStatus(self, name):
+        result = self.requester.get('status_code', URL_PLAYER_DATA_BY_NAME + name)
+        return result
 
     def get_matchHistory(self, puuid, start, count):
         return self.requester.get('json', URL_MATCHHISTORY_IDS + puuid + f"/ids?start={start}&count={count}&queue=450")

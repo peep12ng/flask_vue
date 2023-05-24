@@ -58,6 +58,16 @@ class Item(db.Model):
     name = db.Column(db.VARCHAR(150))
     info = db.Column(db.JSON)
 
+    # _matchDetail = db.relationship('MatchDetail', backref='item')
+
+    _matchDetail_item0 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item0_id')
+    _matchDetail_item1 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item1_id')
+    _matchDetail_item2 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item2_id')
+    _matchDetail_item3 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item3_id')
+    _matchDetail_item4 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item4_id')
+    _matchDetail_item5 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item5_id')
+    _matchDetail_item6 = db.relationship('MatchDetail', foreign_keys='MatchDetail.item6_id')
+
     def __init__(self, id, version_id, key, name, info):
         self.id = id
         self.version_id = version_id

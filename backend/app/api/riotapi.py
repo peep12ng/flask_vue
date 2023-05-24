@@ -1,39 +1,39 @@
-from ..models import User, now, Match, Version, Champion, MatchDetail
+from ..models import Summoner, now, Match, Version, Champion, MatchDetail, Item
 from .collecter import Collecter
 from ..extensions import db
 from .ddragon import add_version, isinDB_version
 
 collecter = Collecter()
 
-def isinAPI_user(name):
-    user = collecter.get_playerDto('name', name)
-    if len(user.keys())==7:
+def isinAPI_summoner(name):
+    status = collecter.get_summonerStatus(name)
+    if status==200:
         return True
     else:
         return False
 
-def isinDB_user(puuid):
-    user = User.query.filter(User.puuid==puuid).first()
-    if user!=None:
+def isinDB_summoner(puuid):
+    summoner = Summoner.query.filter(Summoner.puuid==puuid).first()
+    if summoner!=None:
         return True
     else:
         return False
 
-def add_user(puuid):
+def add_summoner(puuid):
 
-    userDto = collecter.get_playerDto('puuid', puuid)
-    user = User(puuid, userDto['name'], userDto['summonerLevel'], userDto['profileIconId'])
-    db.session.add(user)
+    summonerDto = collecter.get_summonerDto('puuid', puuid)
+    summoner = Summoner(puuid, summonerDto['name'], summonerDto['summonerLevel'], summonerDto['profileIconId'])
+    db.session.add(summoner)
     db.session.commit()
     db.session.close()
 
-def update_user_info(puuid):
-    userDto = collecter.get_playerDto('puuid', puuid)
-    User.query.filter(User.puuid==puuid).update({'name':userDto['name'], 'level':userDto['summonerLevel'], 'icon_id':userDto['profileIconId'], 'update_at':now})
+def update_summoner_info(puuid):
+    summonerDto = collecter.get_summonerDto('puuid', puuid)
+    Summoner.query.filter(Summoner.puuid==puuid).update({'name':summonerDto['name'], 'level':summonerDto['summonerLevel'], 'icon_id':summonerDto['profileIconId'], 'update_at':now})
 
     db.session.commit()
     db.session.close()
-    print('update_user')
+    print('update_summoner_info')
 
 def test_update(puuid):
     matchHistory = []
@@ -50,7 +50,7 @@ def test_update(puuid):
             add_match(m)
             print(f'add match {i+1}/total {needToUpdateMatchCount}')
 
-def update_user_matchHistory(puuid):
+def update_summoner_matchHistory(puuid):
 
     matchHistory = []
     start = 0
@@ -86,26 +86,46 @@ def add_match(matchId):
     # add_match[Match]
 
     version_id = Version.query.filter(Version.season==season, Version.num1==num1).with_entities(Version.id).first().id
-    winTeam = (0 if dto['info']['teams'][0]['win']==True else 1)
+    winTeam = (100 if dto['info']['teams'][0]['win']==True else 200)
+    firstBloodTeam = (100 if dto['info']['teams'][0]['objectives']['champion']['first']==True else 200)
+    firstTowerTeam = (100 if dto['info']['teams'][0]['objectives']['tower']['first']==True else 200)
+    firstInhibitorTeam = (100 if dto['info']['teams'][0]['objectives']['inhibitor']['first']==True else 200)
+    isEarlySurrendered = (True if (dto['info']['participants'][0]['teamEarlySurrendered']==True)&(dto['info']['participants'][5]['teamEarlySurrendered']==True) else False)
     gameStartTimeStamp = dto['info']['gameStartTimestamp']
     gameDuration = dto['info']['gameDuration']
-    newMatch = Match(matchId, dto['info']['gameVersion'], version_id, winTeam, gameStartTimeStamp, gameDuration)
+    newMatch = Match(matchId, dto['info']['gameVersion'], version_id, gameStartTimeStamp, gameDuration,
+                    winTeam, firstBloodTeam, firstTowerTeam, firstInhibitorTeam, isEarlySurrendered)
     db.session.add(newMatch)
     db.session.commit()
 
     # add_match[MatchDetail]
 
     for p in dto['info']['participants']:
-        key = p['championId']
-        id = matchId + '0' * (4-len(str(key))) + str(key)
+        participantId = p['participantId']
+        championKey = p['championId']
         puuid = p['puuid']
-        isWin = p['win']
         # add_user
-        if isinDB_user(puuid)==False:
-            add_user(puuid)
-        champion_id = Champion.query.filter(Champion.version_id==version_id, Champion.key==key).with_entities(Champion.id).first().id
+        if isinDB_summoner(puuid)==False:
+            add_summoner(puuid)
+        champion_id = Champion.query.filter(Champion.version_id==version_id, Champion.key==championKey).first().id
+        champlevel = p['champLevel']
+        goldEarend = p['goldEarned']
+        goldSpent = p['goldSpent']
+        item0_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item0']).first().id if p['item0']!=0 else '0')
+        item1_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item1']).first().id if p['item1']!=0 else '0')
+        item2_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item2']).first().id if p['item2']!=0 else '0')
+        item3_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item3']).first().id if p['item3']!=0 else '0')
+        item4_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item4']).first().id if p['item4']!=0 else '0')
+        item5_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item5']).first().id if p['item5']==0 else '0')
+        item6_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item6']).first().id if p['item6']==0 else '0')
+        itemsPurchased = p['itemsPurchased']
+        longestTimeSpentLiving = p['longestTimeSpentLiving']
 
-        matchDetail = MatchDetail(id, matchId, champion_id, puuid, isWin, p['kills'], p['deaths'], p['assists'])
+        matchDetail = MatchDetail(matchId, champion_id, puuid, participantId,
+                                p['win'], p['kills'], p['deaths'], p['assists'],
+                                champlevel, goldEarend, goldSpent,
+                                item0_id, item1_id, item2_id, item3_id, item4_id, item5_id, item6_id,
+                                itemsPurchased, longestTimeSpentLiving)
         db.session.add(matchDetail)
         db.session.commit()
 

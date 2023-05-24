@@ -72,6 +72,10 @@ def add_items(version):
             db.session.add(item)
             db.session.commit()
     
+    blank = Item('0', version_id, 0, '0', '0')
+    db.session.add(blank)
+    db.session.commit()
+    
     db.session.close()
 
 def add_perks(version):
