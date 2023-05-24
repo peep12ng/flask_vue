@@ -38,7 +38,7 @@ def update_user_info(puuid):
 def test_update(puuid):
     matchHistory = []
     start = 0
-    count = 20
+    count = 5
     
     matchHistory.extend(collecter.get_matchHistory(puuid, start, count))
     needToUpdateMatchCount = len(matchHistory) - len(MatchDetail.query.filter(MatchDetail.puuid==puuid).all())
@@ -48,7 +48,7 @@ def test_update(puuid):
     else:
         for i, m in enumerate(matchHistory[:needToUpdateMatchCount]):
             add_match(m)
-            print(f'add match {i}/total {needToUpdateMatchCount}')
+            print(f'add match {i+1}/total {needToUpdateMatchCount}')
 
 def update_user_matchHistory(puuid):
 
@@ -87,7 +87,9 @@ def add_match(matchId):
 
     version_id = Version.query.filter(Version.season==season, Version.num1==num1).with_entities(Version.id).first().id
     winTeam = (0 if dto['info']['teams'][0]['win']==True else 1)
-    newMatch = Match(matchId, dto['info']['gameVersion'], version_id, winTeam)
+    gameStartTimeStamp = dto['info']['gameStartTimestamp']
+    gameDuration = dto['info']['gameDuration']
+    newMatch = Match(matchId, dto['info']['gameVersion'], version_id, winTeam, gameStartTimeStamp, gameDuration)
     db.session.add(newMatch)
     db.session.commit()
 
@@ -97,12 +99,13 @@ def add_match(matchId):
         key = p['championId']
         id = matchId + '0' * (4-len(str(key))) + str(key)
         puuid = p['puuid']
+        isWin = p['win']
         # add_user
         if isinDB_user(puuid)==False:
             add_user(puuid)
         champion_id = Champion.query.filter(Champion.version_id==version_id, Champion.key==key).with_entities(Champion.id).first().id
 
-        matchDetail = MatchDetail(id, matchId, champion_id, puuid)
+        matchDetail = MatchDetail(id, matchId, champion_id, puuid, isWin, p['kills'], p['deaths'], p['assists'])
         db.session.add(matchDetail)
         db.session.commit()
 

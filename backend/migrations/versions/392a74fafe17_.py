@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: cfeb3513b0c1
+Revision ID: 392a74fafe17
 Revises: 
-Create Date: 2023-05-24 16:01:40.948129
+Create Date: 2023-05-24 17:51:31.576525
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cfeb3513b0c1'
+revision = '392a74fafe17'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -57,6 +57,8 @@ def upgrade():
     sa.Column('gameVersion', sa.VARCHAR(length=30), nullable=True),
     sa.Column('version_id', sa.VARCHAR(length=20), nullable=True),
     sa.Column('winTeam', sa.Integer(), nullable=True),
+    sa.Column('gameStartTimeStamp', sa.BIGINT(), nullable=True),
+    sa.Column('gameDuration', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['version_id'], ['version.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -82,6 +84,10 @@ def upgrade():
     sa.Column('match_id', sa.VARCHAR(length=20), nullable=True),
     sa.Column('champion_id', sa.VARCHAR(length=20), nullable=True),
     sa.Column('puuid', sa.VARCHAR(length=100), nullable=True),
+    sa.Column('isWin', sa.Boolean(), nullable=True),
+    sa.Column('kills', sa.Integer(), nullable=True),
+    sa.Column('deaths', sa.Integer(), nullable=True),
+    sa.Column('assists', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['champion_id'], ['champion.id'], ),
     sa.ForeignKeyConstraint(['match_id'], ['match.id'], ),
     sa.ForeignKeyConstraint(['puuid'], ['user.puuid'], ),
