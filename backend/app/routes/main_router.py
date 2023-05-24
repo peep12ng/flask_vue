@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, make_response
 from ..api import Collecter, riotapi
+from ..api.common import to_dict
 
 from ..models import MatchDetail
 
@@ -13,27 +14,17 @@ def search():
         name = request.args.get('name')
         if riotapi.isinAPI_user(name)==True:
             puuid = collecter.get_playerDto('name', name)['puuid']
-            matches = collecter.get_matchHistory(puuid, 0, 20)
-    
-    data = {"name" : name, "puuid" : puuid, "matches" : matches}
+            if riotapi.isinDB_user(puuid)==True:
+                riotapi.update_user_info(puuid)
+            else:
+                riotapi.add_user(puuid)
 
+        riotapi.test_update(puuid)
+        mds = MatchDetail.query.filter(MatchDetail.puuid==puuid).all()
+
+        data = to_dict(mds)
+    
     return make_response(jsonify(data), 200)
-
-    # name = '여자맨'
-    # if riotapi.isinAPI_user(name)==True:
-    #     puuid = collecter.get_playerDto('name', name)['puuid']
-    #     if riotapi.isinDB_user(puuid)==True:
-    #         riotapi.update_user_info(puuid)
-    #     else:
-    #         riotapi.add_user(puuid)
-
-    # riotapi.test_update(puuid)
-
-    # result = len(MatchDetail.query.filter(MatchDetail.puuid==puuid).all())
-    
-    # data = {"result": result}
-
-    # return jsonify(data)
 
 # @bp.route("/test", methods=['GET', 'POST', 'PUT', 'DELETE'])
 # def test():
