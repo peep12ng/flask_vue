@@ -36,42 +36,46 @@ def update_summoner_info(puuid):
     print('update_summoner_info')
 
 def test_update(puuid):
-    matchHistory = []
+    matches = []
     start = 0
     count = 5
     
-    matchHistory.extend(collecter.get_matchHistory(puuid, start, count))
-    needToUpdateMatchCount = len(matchHistory) - len(MatchDetail.query.filter(MatchDetail.puuid==puuid).all())
+    matches = collecter.get_matchHistory(puuid, start, count)
+    inDBMatches = [md.match_id for md in MatchDetail.query.filter(MatchDetail.puuid==puuid).all()]
 
-    if needToUpdateMatchCount==0:
-        print('do not need to update[MatchHistory]')
-    else:
-        for i, m in enumerate(matchHistory[:needToUpdateMatchCount]):
+    matchesWhatNeedToAdd = list(set(matches) - set(inDBMatches))
+
+    if len(matchesWhatNeedToAdd)==0:
+        print("do not need to add match")
+    else:            
+        for i, m in enumerate(matchesWhatNeedToAdd):
             add_match(m)
-            print(f'add match {i+1}/total {needToUpdateMatchCount}')
+            print(f'add match {i+1}/total {len(matchesWhatNeedToAdd)}')
 
 def update_summoner_matchHistory(puuid):
 
-    matchHistory = []
+    allMatches = []
     start = 0
     count = 100
 
     while True:
-        matchHistory.extend(collecter.get_matchHistory(puuid, start, count))
+        allMatches.extend(collecter.get_matchHistory(puuid, start, count))
         
-        if len(matchHistory)%100!=0:
+        if len(allMatches)%100!=0:
             break
         else:
             start = start + 100
-    
-    needToUpdateMatchCount = len(matchHistory) - len(MatchDetail.query.filter(MatchDetail.puuid==puuid).all())
 
-    if needToUpdateMatchCount==0:
-        print('do not need to update[MatchHistory]')
-    else:
-        for i, m in enumerate(matchHistory[:needToUpdateMatchCount]):
+    inDBMatches = [md.match_id for md in MatchDetail.query.filter(MatchDetail.puuid==puuid).all()]
+
+    matchesWhatNeedToAdd = list(set(allMatches) - set(inDBMatches))
+
+    if len(matchesWhatNeedToAdd)==0:
+        print("do not need to add match")
+    else:            
+        for i, m in enumerate(matchesWhatNeedToAdd):
             add_match(m)
-            print(f'add match {i}/total {needToUpdateMatchCount}')
+            print(f'add match {i+1}/total {len(matchesWhatNeedToAdd)}')
     
 def add_match(matchId):
     dto = collecter.get_matchDto(matchId)
