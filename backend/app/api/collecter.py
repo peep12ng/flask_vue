@@ -59,3 +59,6 @@ class Collecter:
     
     def get_spell(self, version):
         return self.requester.get('json', f"http://ddragon.leagueoflegends.com/cdn/{version}/data/{language}/summoner.json")
+    
+    def get_shard(self):
+        return self.requester.get('json', 'https://raw.communitydragon.org/13.9/plugins/rcp-be-lol-game-data/global/ko_kr/v1/perks.json')

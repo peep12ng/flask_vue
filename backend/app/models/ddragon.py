@@ -2,7 +2,7 @@ from ..extensions import db
 
 class Version(db.Model):
     id = db.Column(db.VARCHAR(10), primary_key=True)
-    version = db.Column(db.VARCHAR(50))
+    version = db.Column(db.VARCHAR(10))
     season = db.Column(db.Integer)
     num1 = db.Column(db.Integer)
     num2 = db.Column(db.Integer)
@@ -14,42 +14,28 @@ class Version(db.Model):
     _perk = db.relationship('Perk', backref='version')
     _spell = db.relationship('Spell', backref='version')
 
-    def __init__(self, id, version):
+    def __init__(self, id, version, season, num1, num2):
         self.id = id
         self.version = version
-        self.season = int(version.split('.')[0])
-        self.num1 = int(version.split('.')[1])
-        self.num2 = int(version.split('.')[2])
+        self.season = int(season)
+        self.num1 = int(num1)
+        self.num2 = int(num2)
 
 class Champion(db.Model):
     id = db.Column(db.VARCHAR(20), primary_key=True)
-    name = db.Column(db.VARCHAR(20))
     version_id = db.Column(db.VARCHAR(20), db.ForeignKey('version.id'))
     key = db.Column(db.Integer)
-    # title = db.Column(db.VARCHAR(20))
-    # sprite = db.Column(db.VARCHAR(15))
-    # sprite_x = db.Column(db.Integer)
-    # sprite_y = db.Column(db.Integer)
-    # sprite_w = db.Column(db.Integer)
-    # sprite_h = db.Column(db.Integer)
-    # mainTag = db.Column(db.VARCHAR(10))
-    # subTag = db.Column(db.VARCHAR(10))
-
+    name = db.Column(db.VARCHAR(20))
+    info = db.Column(db.JSON)
+    
     _matchDetail = db.relationship('MatchDetail', backref='champion')
 
-    def __init__(self, id, version_id, name, key):
+    def __init__(self, id, version_id, key, name, info):
         self.id = id
-        self.name = name
         self.version_id = version_id
         self.key = key
-        # self.title = title
-        # self.sprite = sprite
-        # self.sprite_x = sprite_x
-        # self.sprite_y = sprite_y
-        # self.sprite_w = sprite_w
-        # self.sprite_h = sprite_h
-        # self.mainTag = mainTag
-        # self.subTag = subTag
+        self.name = name
+        self.info = info
     
 class Item(db.Model):
     id = db.Column(db.VARCHAR(20), primary_key=True)
@@ -82,6 +68,8 @@ class PerkStyle(db.Model):
     name = db.Column(db.VARCHAR(10))
 
     _perk = db.relationship('Perk', backref='perk_style')
+    _matchDetail_mainPerkStyle = db.relationship('MatchDetail', foreign_keys='MatchDetail.mainPerkStyle_id')
+    _matchDetail_subPerkStyle = db.relationship('MatchDetail', foreign_keys='MatchDetail.subPerkStyle_id')
 
     def __init__(self, id, version_id, key, name):
         self.id = id
@@ -99,6 +87,13 @@ class Perk(db.Model):
     shortDesc = db.Column(db.Text())
     longDesc = db.Column(db.Text())
 
+    _matchDetail_mainPerk1 = db.relationship('MatchDetail', foreign_keys='MatchDetail.mainPerk1_id')
+    _matchDetail_mainPerk2 = db.relationship('MatchDetail', foreign_keys='MatchDetail.mainPerk2_id')
+    _matchDetail_mainPerk3 = db.relationship('MatchDetail', foreign_keys='MatchDetail.mainPerk3_id')
+    _matchDetail_mainPerk4 = db.relationship('MatchDetail', foreign_keys='MatchDetail.mainPerk4_id')
+    _matchDetail_subPerk1 = db.relationship('MatchDetail', foreign_keys='MatchDetail.subPerk1_id')
+    _matchDetail_subPerk2 = db.relationship('MatchDetail', foreign_keys='MatchDetail.subPerk2_id')
+
     def __init__(self, id, version_id, key, slot, name, shortDesc, longDesc):
         self.id = id
         self.version_id = version_id
@@ -107,6 +102,26 @@ class Perk(db.Model):
         self.name = name
         self.shortDesc = shortDesc
         self.longDesc = longDesc
+
+class Shard(db.Model):
+    id = db.Column(db.VARCHAR(20), primary_key=True)
+    name = db.Column(db.VARCHAR(10))
+    tooltip = db.Column(db.VARCHAR(100))
+    shortDesc = db.Column(db.VARCHAR(200))
+    longDesc = db.Column(db.VARCHAR(200))
+    iconPath = db.Column(db.VARCHAR(100))
+
+    _matchDetail_shardDefense = db.relationship('MatchDetail', foreign_keys='MatchDetail.shardDefense_id')
+    _matchDetail_shardFlex = db.relationship('MatchDetail', foreign_keys='MatchDetail.shardFlex_id')
+    _matchDetail_shardOffense = db.relationship('MatchDetail', foreign_keys='MatchDetail.shardOffense_id')
+
+    def __init__(self, id, name, tooltip, shortDesc, longDesc, iconPath):
+        self.id = id
+        self.name = name
+        self.tooltip = tooltip
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
+        self.iconPath = iconPath
 
 class Spell(db.Model):
     id = db.Column(db.VARCHAR(20), primary_key=True)
@@ -121,15 +136,3 @@ class Spell(db.Model):
         self.name = name
         self.version_id = version_id
         self.info = info
-
-# class Sprite(db.Model):
-#     id = db.Column(db.VARCHAR(20), primary_key=True)
-#     name = db.Column(db.VARCHAR(20))
-#     version_id = db.Column(db.VARCHAR(20), db.ForeignKey('version.id'))
-#     image = db.Column(db.MEDUIMBLOB)
-
-#     def __init__(self, id, name, version_id, image):
-#         self.id = id
-#         self.name = name
-#         self.version_id = version_id
-#         self.image = image
