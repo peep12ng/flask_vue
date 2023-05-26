@@ -9,8 +9,8 @@
                             <div class="match-info">
                                 <b v-if="matchList.isWin" class="resultWin">승리</b>
                                 <b v-else class="resultLose">패배</b>
-                                <p>15분 57초</p>
-                                <p>3일전</p>
+                                <p>{{ matchList.timeplayedMinutes }}분 {{ matchList.timeplayedSeconds }}초</p>
+                                <p>{{ matchList.date }}</p>
                             </div>
                             <div class="summoner-champ">
                                 <div class="champ">
@@ -41,13 +41,13 @@
                             </div>
                             <div class="summoner-killGold">
                                 <p class="killPercent">킬 관여 <b>100</b>%</p>
-                                <p class="goldEarned"><img src="../assets/image/coins.png" alt=""> <b>{{ matchList.goldEarend.toLocaleString('ko-KR') }}</b></p>
+                                <p class="goldEarned"><img src="../assets/image/coins.png" alt=""> <b>{{ matchList.goldEarned.toLocaleString('ko-KR') }}</b></p>
                             </div>   
                             <div class="summoner-items">
                                 <ul>
                                     <li class="itemList" v-for="items in matchList.items" :key="items">
                                         <div>
-                                            <img v-if="items != 0" :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/item/${ items.slice(-4) }.png`" alt="">
+                                            <img v-if="items.slice(-4) != Number('0000')" :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/item/${ items.slice(-4) }.png`" alt="">
                                         </div>
                                     </li>
                                 </ul>
@@ -118,12 +118,12 @@
                                 </div>
                                 <div class="detail-tbody">
                                     <ul class="detail-tbody-wrap">
-                                        <li v-for="detailTList in 5" :key="detailTList" class="detail-tbody-list" :style="`background: #f9fbfd`">
+                                        <li v-for="detailBlueList in matchList.blue" :key="detailBlueList" class="detail-tbody-list" :style="`background: #f9fbfd`">
                                             <div class="detail-tbody-list-wrap">
                                                 <div class="detail-content detail-champInfo">
                                                     <div class="detail-champ">
                                                         <img :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Aatrox.png`" alt="">
-                                                        <i>18</i>                                                        
+                                                        <i>{{ detailBlueList.champLevel }}</i>                                                        
                                                     </div>
                                                     <div class="detail-spells">
                                                         <div class="detail-spell">
@@ -146,9 +146,9 @@
                                                     <p>때리는걸잘해요</p>
                                                 </div>
                                                 <div class="detail-content detail-kda">
-                                                    <p class="detail-kda-top">{{ matchList.kills }}/{{ matchList.deaths }}/{{ matchList.assists }}</p>
-                                                    <p v-if="Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 != Infinity" class="detail-kda-bottom">{{ Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 }} KDA</p>
-                                                    <p v-if="Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 == Infinity" class="detail-kda-bottom">Perfect KDA</p>                        
+                                                    <p class="detail-kda-top">{{ detailBlueList.kills }}/{{ detailBlueList.deaths }}/{{ detailBlueList.assists }}</p>
+                                                    <p v-if="Math.round((detailBlueList.kills+detailBlueList.assists)/detailBlueList.deaths*100)/100 != Infinity" class="detail-kda-bottom">{{ Math.round((detailBlueList.kills+detailBlueList.assists)/detailBlueList.deaths*100)/100 }} KDA</p>
+                                                    <p v-if="Math.round((detailBlueList.kills+detailBlueList.assists)/detailBlueList.deaths*100)/100 == Infinity" class="detail-kda-bottom">Perfect KDA</p>                        
                                                     
                                                 </div>
                                                 <div class="detail-content detail-damage">
@@ -163,9 +163,9 @@
                                                 </div>
                                                 <div class="detail-content detail-items">
                                                     <ul class="detail-items-wrap">
-                                                        <li class="detail-item-list" v-for="teamDetailItems in 7" :key="teamDetailItems">
+                                                        <li class="detail-item-list" v-for="blueItems in detailBlueList.items" :key="blueItems">
                                                             <div class="detail-item-list-wrap">
-                                                                <img :src="`http://ddragon.leagueoflegends.com/cdn/13.8.1/img/item/3748.png`" alt="">
+                                                                <img v-if="blueItems.slice(-4) != Number('0000')" :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/item/${ blueItems.slice(-4) }.png`" alt="">
                                                             </div>
                                                         </li>
                                                     </ul>                                                    
@@ -197,12 +197,12 @@
                                 </div> 
                                 <div class="detail-tbody">
                                     <ul class="detail-tbody-wrap">
-                                        <li v-for="detailTList in 5" :key="detailTList" class="detail-tbody-list" :style="`background: #fef9f9`">
+                                        <li v-for="detailRedList in matchList.red" :key="detailRedList" class="detail-tbody-list" :style="`background: #fef9f9`">
                                             <div class="detail-tbody-list-wrap">
                                                 <div class="detail-content detail-champInfo">
                                                     <div class="detail-champ">
                                                         <img :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/champion/Aatrox.png`" alt="">
-                                                        <i>18</i>                                                        
+                                                        <i>{{ detailRedList.champLevel }}</i>                                                        
                                                     </div>
                                                     <div class="detail-spells">
                                                         <div class="detail-spell">
@@ -225,9 +225,9 @@
                                                     <p>때리는걸잘해요</p>
                                                 </div>
                                                 <div class="detail-content detail-kda">
-                                                    <p class="detail-kda-top">{{ matchList.kills }}/{{ matchList.deaths }}/{{ matchList.assists }}</p>
-                                                    <p v-if="Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 != Infinity" class="detail-kda-bottom">{{ Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 }} KDA</p>
-                                                    <p v-if="Math.round((matchList.kills+matchList.assists)/matchList.deaths*100)/100 == Infinity" class="detail-kda-bottom">Perfect KDA</p>                        
+                                                    <p class="detail-kda-top">{{ detailRedList.kills }}/{{ detailRedList.deaths }}/{{ detailRedList.assists }}</p>
+                                                    <p v-if="Math.round((detailRedList.kills+detailRedList.assists)/detailRedList.deaths*100)/100 != Infinity" class="detail-kda-bottom">{{ Math.round((detailRedList.kills+detailRedList.assists)/detailRedList.deaths*100)/100 }} KDA</p>
+                                                    <p v-if="Math.round((detailRedList.kills+detailRedList.assists)/detailRedList.deaths*100)/100 == Infinity" class="detail-kda-bottom">Perfect KDA</p>                        
                                                     
                                                 </div>
                                                 <div class="detail-content detail-damage">
@@ -242,9 +242,9 @@
                                                 </div>
                                                 <div class="detail-content detail-items">
                                                     <ul class="detail-items-wrap">
-                                                        <li class="detail-item-list" v-for="teamDetailItems in 7" :key="teamDetailItems">
+                                                        <li class="detail-item-list" v-for="redItems in detailRedList.items" :key="redItems">
                                                             <div class="detail-item-list-wrap">
-                                                                <img :src="`http://ddragon.leagueoflegends.com/cdn/13.8.1/img/item/3748.png`" alt="">
+                                                                <img v-if="redItems.slice(-4) != Number('0000')" :src="`http://ddragon.leagueoflegends.com/cdn/13.10.1/img/item/${ redItems.slice(-4) }.png`" alt="">
                                                             </div>
                                                         </li>
                                                     </ul>                                                    
@@ -287,23 +287,105 @@ export default {
             },
         })
         .then( response =>{
-            this.summonerMatch = response.data;
             console.log(response);
             for( var i=0; i<response.data.length; i++ ){
-                this.summonerMatch[i].items = [];
-                this.summonerMatch[i].detailTabOpen = [true,false,false];
+                 this.summonerMatch[i] = {
+                    items: [],
+                    detailTabOpen: [true,false,false],
+                    openDetail: false,
+                    blueDamage: true,
+                    redDamage: true,
+                    blue: [{},{},{},{},{}],               
+                    red: [{},{},{},{},{}],               
+                }
+                
+                // items
+                this.summonerMatch[i].items.push(response.data[i].myData.item0_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item1_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item2_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item6_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item3_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item4_id);
+                this.summonerMatch[i].items.push(response.data[i].myData.item5_id);
 
-                this.summonerMatch[i].items.push(response.data[i].item0_id);
-                this.summonerMatch[i].items.push(response.data[i].item1_id);
-                this.summonerMatch[i].items.push(response.data[i].item2_id);
-                this.summonerMatch[i].items.push(response.data[i].item6_id);
-                this.summonerMatch[i].items.push(response.data[i].item3_id);
-                this.summonerMatch[i].items.push(response.data[i].item4_id);
-                this.summonerMatch[i].items.push(response.data[i].item5_id);
+                // kda
+                this.summonerMatch[i].kills = response.data[i].myData.kills;
+                this.summonerMatch[i].assists = response.data[i].myData.assists;
+                this.summonerMatch[i].deaths = response.data[i].myData.deaths;
+                
+                // gold
+                this.summonerMatch[i].goldEarned = response.data[i].myData.goldEarend;
 
-                this.summonerMatch[i].openDetail = false;
-                this.summonerMatch[i].blueDamage = true;
-                this.summonerMatch[i].redDamage = true;
+                // isWin
+                this.summonerMatch[i].isWin = response.data[i].myData.isWin;
+                
+                // champLevel
+                this.summonerMatch[i].champLevel = response.data[i].myData.champLevel;
+
+                // time
+                var gameStartTime = response.data[i].gameStartTimeStamp;
+                var now = new Date();
+                var dataDiff = Math.abs((gameStartTime-now)/(1000*60*60));
+
+                if(dataDiff<24){
+                    this.summonerMatch[i].date = `${Math.floor(dataDiff)}시간 전`;
+                }
+                else{
+                    this.summonerMatch[i].date = `${Math.floor(dataDiff/24)}일 전`;
+                }                
+
+                // playTime
+                var hours = Math.floor(response.data[i].gameDuration/3600);
+                var minutes = Math.floor( (response.data[i].gameDuration - hours*3600)/60 );
+                var seconds = response.data[i].gameDuration - hours*3600 - minutes*60;
+
+                this.summonerMatch[i].timeplayedMinutes = minutes;
+                this.summonerMatch[i].timeplayedSeconds = seconds;    
+                
+                
+                // blue/red
+                for( var k=0; k<5; k++ ){
+                    this.summonerMatch[i].blue[k].items = [];
+                    this.summonerMatch[i].red[k].items = [];
+
+                    // blue kda
+                    this.summonerMatch[i].blue[k].kills = response.data[i].participants[k].kills;
+                    this.summonerMatch[i].blue[k].deaths = response.data[i].participants[k].deaths;
+                    this.summonerMatch[i].blue[k].assists = response.data[i].participants[k].assists;
+
+                    // red kda
+                    this.summonerMatch[i].red[k].kills = response.data[i].participants[k+5].kills;
+                    this.summonerMatch[i].red[k].deaths = response.data[i].participants[k+5].deaths;
+                    this.summonerMatch[i].red[k].assists = response.data[i].participants[k+5].assists;
+
+                    // blue champLevel
+                    this.summonerMatch[i].blue[k].champLevel = response.data[i].participants[k].champLevel;
+
+                    // red champLevel
+                    this.summonerMatch[i].red[k].champLevel = response.data[i].participants[k+5].champLevel;
+
+                    // blue items
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item0_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item1_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item2_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item3_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item4_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item5_id);
+                    this.summonerMatch[i].blue[k].items.push(response.data[i].participants[k].item6_id);
+
+                    // red items
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item0_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item1_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item2_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item3_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item4_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item5_id);
+                    this.summonerMatch[i].red[k].items.push(response.data[i].participants[k+5].item6_id);
+
+
+
+                }
+
                 
             }
             console.log(this.summonerMatch);
