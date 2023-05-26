@@ -1,18 +1,18 @@
-from ..models import Summoner, now, Match, Version, Champion, MatchDetail, Item
+from ..models import Summoner, now, Match, Version, Champion, MatchDetail, Item, Perk, PerkStyle
 from .collecter import Collecter
 from ..extensions import db
 from .ddragon import add_version, isinDB_version
 
 collecter = Collecter()
 
-def isinAPI_summoner(name):
+def get_isinAPI_summoner(name):
     status = collecter.get_summonerStatus(name)
     if status==200:
         return True
     else:
         return False
 
-def isinDB_summoner(puuid):
+def get_isinDB_summoner(puuid):
     summoner = Summoner.query.filter(Summoner.puuid==puuid).first()
     if summoner!=None:
         return True
@@ -80,12 +80,13 @@ def update_summoner_matchHistory(puuid):
 def add_match(matchId):
     dto = collecter.get_matchDto(matchId)
 
-    season = dto['info']['gameVersion'].split('.')[0]
-    num1 = dto['info']['gameVersion'].split('.')[1]
+    season = int(dto['info']['gameVersion'].split('.')[0])
+    num1 = int(dto['info']['gameVersion'].split('.')[1])
     
     if isinDB_version(season, num1)==False:
+        print(season, num1)
         print('False')
-        add_version(season, num1)
+        add_version(season, num1, 1)
     
     # add_match[Match]
 
@@ -106,30 +107,63 @@ def add_match(matchId):
 
     for p in dto['info']['participants']:
         participantId = p['participantId']
-        championKey = p['championId']
+        id = matchId + '0' * (2-len(str(participantId))) + str(participantId)
+        champion_key = p['championId']
+        champion_id = 'C' + version_id + '0' * (4-len(str(champion_key))) + str(champion_key)
         puuid = p['puuid']
         # add_user
-        if isinDB_summoner(puuid)==False:
+        if get_isinDB_summoner(puuid)==False:
             add_summoner(puuid)
-        champion_id = Champion.query.filter(Champion.version_id==version_id, Champion.key==championKey).first().id
         champlevel = p['champLevel']
         goldEarend = p['goldEarned']
         goldSpent = p['goldSpent']
-        item0_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item0']).first().id if p['item0']!=0 else '0')
-        item1_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item1']).first().id if p['item1']!=0 else '0')
-        item2_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item2']).first().id if p['item2']!=0 else '0')
-        item3_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item3']).first().id if p['item3']!=0 else '0')
-        item4_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item4']).first().id if p['item4']!=0 else '0')
-        item5_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item5']).first().id if p['item5']==0 else '0')
-        item6_id = (Item.query.filter(Item.version_id==version_id, Item.key==p['item6']).first().id if p['item6']==0 else '0')
+        print(type(p['item0']))
+        item0_id = 'I' + version_id + (str(p['item0']) if p['item0']!=0 else '0000')
+        item1_id = 'I' + version_id + (str(p['item1']) if p['item1']!=0 else '0000')
+        item2_id = 'I' + version_id + (str(p['item2']) if p['item2']!=0 else '0000')
+        item3_id = 'I' + version_id + (str(p['item3']) if p['item3']!=0 else '0000')
+        item4_id = 'I' + version_id + (str(p['item4']) if p['item4']!=0 else '0000')
+        item5_id = 'I' + version_id + (str(p['item5']) if p['item5']!=0 else '0000')
+        item6_id = 'I' + version_id + (str(p['item6']) if p['item6']!=0 else '0000')
+
         itemsPurchased = p['itemsPurchased']
         longestTimeSpentLiving = p['longestTimeSpentLiving']
 
-        matchDetail = MatchDetail(matchId, champion_id, puuid, participantId,
+        statPerks = p['perks']['statPerks']
+        shardDefense_id = 'SH'+ str(statPerks['defense'])
+        shardFlex_id = 'SH' + str(statPerks['flex'])
+        shardOffense_id = 'SH' + str(statPerks['offense'])
+        
+        mainStyles = p['perks']['styles'][0]
+        mainPerkStyle_id = 'PS' + version_id + str(mainStyles['style'])
+
+        mainPerks = mainStyles['selections']
+        mainPerk1_id = 'P' + version_id + str(mainPerks[0]['perk'])
+        mainPerk2_id = 'P' + version_id + str(mainPerks[1]['perk'])
+        mainPerk3_id = 'P' + version_id + str(mainPerks[2]['perk'])
+        mainPerk4_id = 'P' + version_id + str(mainPerks[3]['perk'])
+
+        subStyles = p['perks']['styles'][1]
+        subPerkStyle_id = 'PS' + version_id + str(subStyles['style'])
+        subPerks = subStyles['selections']
+        subPerk1_id = 'P' + version_id + str(subPerks[0]['perk'])
+        subPerk2_id = 'P' + version_id + str(subPerks[1]['perk'])
+
+        matchDetail = MatchDetail(id, matchId, champion_id, puuid, participantId,
                                 p['win'], p['kills'], p['deaths'], p['assists'],
                                 champlevel, goldEarend, goldSpent,
                                 item0_id, item1_id, item2_id, item3_id, item4_id, item5_id, item6_id,
-                                itemsPurchased, longestTimeSpentLiving)
+                                itemsPurchased, longestTimeSpentLiving,
+                                shardDefense_id, shardFlex_id, shardOffense_id,
+                                mainPerkStyle_id,
+                                mainPerk1_id, mainPerks[0]['var1'], mainPerks[0]['var2'], mainPerks[0]['var3'],
+                                mainPerk2_id, mainPerks[1]['var1'], mainPerks[1]['var2'], mainPerks[1]['var3'],
+                                mainPerk3_id, mainPerks[2]['var1'], mainPerks[2]['var2'], mainPerks[2]['var3'],
+                                mainPerk4_id, mainPerks[3]['var1'], mainPerks[3]['var2'], mainPerks[3]['var3'],
+                                subPerkStyle_id,
+                                subPerk1_id, subPerks[0]['var1'], subPerks[0]['var2'], subPerks[0]['var3'],
+                                subPerk2_id, subPerks[1]['var1'], subPerks[1]['var2'], subPerks[1]['var3']
+                                )
         db.session.add(matchDetail)
         db.session.commit()
 
